@@ -5,10 +5,24 @@
 // Data
 const account1 = {
   owner: 'Jonas Schmedtmann',
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300,130.55, 240.3],
   interestRate: 1.2, // %
   pin: 1111,
   iban: 1220,
+    movementsDates: [
+    '2019-11-18T21:31:17.178Z',
+    '2019-12-23T07:42:02.383Z',
+    '2020-01-28T09:15:04.904Z',
+    '2020-04-01T10:17:24.185Z',
+    '2020-05-08T14:11:59.604Z',
+    '2020-07-26T17:01:17.194Z',
+    '2020-07-28T23:36:17.929Z',
+    '2025-12-16T10:51:36.790Z',
+    '2025-12-17T21:31:17.178Z',
+    '2025-12-18T07:42:02.383Z',
+  ],
+  currency: 'EUR',
+  locale: 'pt-PT', // de-DE
 };
 
 const account2 = {
@@ -17,6 +31,18 @@ const account2 = {
   interestRate: 1.5,
   pin: 2222,
   iban: 1230,
+    movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-25T14:18:46.235Z',
+    '2020-02-05T16:33:06.386Z',
+    '2020-04-10T14:43:26.374Z',
+    '2020-06-25T18:49:59.371Z',
+    '2020-07-26T12:01:20.894Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 };
 
 const account3 = {
@@ -25,6 +51,18 @@ const account3 = {
   interestRate: 0.7,
   pin: 3333,
   iban: 1240,
+    movementsDates: [
+    '2020-11-01T13:15:33.035Z',
+    '2020-11-30T09:48:16.867Z',
+    '2020-12-25T06:04:23.907Z',
+    '2022-01-25T14:18:46.235Z',
+    '2022-02-05T16:33:06.386Z',
+    '2022-04-10T14:43:26.374Z',
+    '2023-06-25T18:49:59.371Z',
+    '2022-07-26T12:01:20.894Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 };
 
 const account4 = {
@@ -33,6 +71,18 @@ const account4 = {
   interestRate: 1,
   pin: 4444,
   iban: 1250,
+    movementsDates: [
+    '2022-11-01T13:15:33.035Z',
+    '2023-11-30T09:48:16.867Z',
+    '2023-12-25T06:04:23.907Z',
+    '2023-01-25T14:18:46.235Z',
+    '2024-02-05T16:33:06.386Z',
+    '2024-04-10T14:43:26.374Z',
+    '2024-06-25T18:49:59.371Z',
+    '2024-07-26T12:01:20.894Z',
+  ],
+  currency: 'USD',
+  locale: 'en-US',
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -65,14 +115,63 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
-const displayMovements= function(movements, sort=false){
+
+
+
+
+const formatMovementDate = function (date,locale){
+   
+  const calcDaysPassed = (date1,date2)=>
+     Math.round(Math.abs((date2-date1)/(1000*60*60*24)));
+
+  const daysPassed = calcDaysPassed(new Date(), date)
+  console.log('*******************************')
+  console.log(new Date())
+  console.log(date)
+  console.log(daysPassed)
+
+  if (daysPassed === 0) return 'today';
+  if (daysPassed === 1 ) return 'yesterday';
+  if (daysPassed <=7 ) return `${daysPassed} days ago`;
+
+  return new Intl.DateTimeFormat(locale).format(date);
+
+
+ /*  else{
+      const day= `${date.getDate()}`.padStart(2,0)
+      const month=`${date.getMonth()+1}`.padStart(2,0);
+      const year=date.getFullYear();
+
+      return `${day}/${month}/${year}` 
+  } */
+      
+}
+
+
+const displayMovements= function(acc, sort=false){
 
     containerMovements.innerHTML= ''
 
-    const movs= sort? movements.slice().sort((a,b)=>a-b): movements;
+    const combineMovDates= acc.movements.map((mov,i)=>
+      ({
+        movement: mov,
+        movementDate: acc.movementsDates.at(i)
+    }));
+    console.log(combineMovDates)
 
-    movs.forEach(function(mov,i){
-    const type = mov >0? 'deposit' :'withdrawal'
+   if(sort) combineMovDates.sort((a,b)=> a.movement - b.movement)
+
+    combineMovDates.forEach(function(obj,i){
+
+      const {movement, movementDate} = obj;
+
+      const type = movement >0? 'deposit' :'withdrawal'
+
+       const date= new Date(movementDate)
+       const displayDate = formatMovementDate(date,acc.locale)
+
+ 
+
 
     const html = 
     `
@@ -80,7 +179,8 @@ const displayMovements= function(movements, sort=false){
         <div class="movements__row">
           <div class="movements__type
            movements__type--${type}">${i + 1} ${type}</div>
-          <div class="movements__value">${mov} €</div>
+           <div class="movements__date">${displayDate}</div>
+          <div class="movements__value">${movement.toFixed(2)} €</div>
         </div>
         `;
 
@@ -314,7 +414,7 @@ console.log(acc)
 const calcPrintBalance = function(account){
 account.balance = account.movements.reduce((acc, curr) => acc
 + curr, 0);
-labelBalance.textContent=`${account.balance} €`;
+labelBalance.textContent=`${account.balance.toFixed(2)} €`;
 };
 
 
@@ -393,16 +493,16 @@ const calcDisplaySummary = function (obj){
 
   const incomes = obj.movements.filter(mov=> mov>0)
   .reduce((acc,mov)=> acc +mov,0);
-  labelSumIn.textContent =`${incomes} €`
+  labelSumIn.textContent =`${incomes.toFixed(2)} €`
 
  const out = obj.movements.filter(e=>e<0).reduce((total,curr)=> total + curr,0);
-  labelSumOut.textContent=`${out} €`
+  labelSumOut.textContent=`${out.toFixed(2)} €`
 
   const interest= obj.movements.filter(e=> e>0)
   .map(e=>e*obj.interestRate/100)
   .filter(e=>e>=1)
   .reduce((acc,curr)=> acc+curr)
-  labelSumInterest.textContent=`${interest}€`
+  labelSumInterest.textContent=`${interest.toFixed(2)}€`
 }
 
 
@@ -473,6 +573,26 @@ if (currentAcc?.pin === Number(inputLoginPin.value)){
 
   labelWelcome.textContent=`Welcome back, ${currentAcc.owner.split(' ')[0]}`
   containerApp.style.opacity = 1
+
+  // create date
+const now= new Date()
+const options= {
+  hour: 'numeric',
+  minute: 'numeric',
+  day: 'numeric',
+  month: 'long',
+  year:'numeric',
+  weekday:'short'
+}
+
+labelDate.textContent= new Intl.DateTimeFormat(currentAcc.locale,options).format(now)
+/* const day= now.getDate();
+const month=`${now.getMonth()+1}`.padStart(2,0);
+const year=now.getFullYear();
+const hour=`${now.getHours()}`.padStart(2,0)
+const min= `${now.getMinutes()}`.padStart(2,0)
+labelDate.textContent =`${day}/${month}/${year}, ${hour}:${min}` */
+
   inputLoginPin.value=''
   inputLoginUsername.value=''
   inputLoginPin.blur()
@@ -495,6 +615,10 @@ currentAcc.movements.push(-value)
 console.log(currentAcc.movements)
 accRec.movements.push(value)
 console.log(accRec.movements)
+
+// add transfer date
+currentAcc.movementsDates.push(new Date().toISOString())
+accRec.movementsDates.push(new Date().toISOString())
 updateUI(currentAcc); 
 console.log(`a tranferencia da conta do titular ${currentAcc.owner} com o iban "${currentAcc.iban}" no valor de "${value}" para a conta de destino do titular ${accRec.owner} com o iban "${accRec.iban}" foi realizada com sucesso!`)
 }
@@ -510,7 +634,7 @@ btnTransfer.addEventListener('click',function(e){
 
 
 const updateUI= function(currentAcc){
-displayMovements(currentAcc.movements)
+displayMovements(currentAcc)
   calcPrintBalance(currentAcc)
   calcDisplaySummary(currentAcc) 
 }
@@ -568,12 +692,14 @@ console.log(everyDeposit)
 
 btnLoan.addEventListener('click', function(e){
   e.preventDefault();
-  const requestAmount= Number(inputLoanAmount.value)
-
+  const requestAmount= Math.floor(inputLoanAmount.value);
+  
   if(requestAmount > 0 && currentAcc.balance>0 && currentAcc.movements.some(e=>e > requestAmount*0.1)){
     alert('O empréstimo foi concedido!')
 
     currentAcc.movements.push(requestAmount)
+    // add transfer date
+    currentAcc.movementsDates.push(new Date().toISOString())
     updateUI(currentAcc)
     inputLoanAmount.value=''
   }
@@ -588,7 +714,7 @@ let sorted = false;
 
 btnSort.addEventListener('click',function(e){
   e.preventDefault();
-  displayMovements(currentAcc.movements,!sorted);
+  displayMovements(currentAcc,!sorted);
   sorted=!sorted;
 })
 
@@ -839,3 +965,5 @@ const groupByActivity = Object.groupBy(accounts, acc=>{
         return 'inactive'
 } )
 console.log(groupByActivity)
+
+
