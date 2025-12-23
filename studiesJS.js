@@ -571,3 +571,52 @@ console.log(diferencaDias)
 //internationalizing
 
 const num = new Intl.NumberFormat('en-US').format()
+
+
+// setInterval() -> Faz uma accao constante consoeante um intrevalo
+/* setInterval(function (){
+const now= new Date();
+console.log(now)
+
+},1000) */
+
+
+
+// setTimout() -> faz apenas 1 acao num intrevalo de tempo
+
+/* setTimeout(function (){
+const now= new Date();
+const hora= now.getHours()
+const min= now.getMinutes()
+const seg= now.getSeconds()
+console.log(`Time= ${hora}:${min}:${seg}`)
+},1000)
+ */
+
+let on = true;
+
+setTimeout(function(){
+  on = false;
+console.log('logOut')
+},1200)
+
+on? console.log('online'): console.log('offline')
+
+
+
+ let timer= 5
+const timeex= setInterval(function(){
+ 
+  const min= String (Math.trunc(timer/60)).padStart(2,0)
+  const sec = String(timer%60).padStart(2,0)
+  console.log(`${min}:${sec}`)
+  
+
+  if(timer===0){
+    clearInterval(timeex)
+  }
+
+  timer--
+
+},1000)
+
